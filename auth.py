@@ -7,23 +7,10 @@ YOU MUST EDIT THE jatoken line with your own token!!!!!!!
 """
 import requests
 import json
+from creds import *
 
-instanceurl = "https://cprime.agilecraft.com/api"
-apiendpoint = "/users?"
-
-# Edit the below to include YOUR token number
-def getauth():
-    global jatoken
-    jatoken = "a5Z||0=4NWo9N+i)4H87KFsy#P~Ra+h9^QHRIbSO"
-    global username
-    username = "apitoken"
-    return jatoken,username
-    
-
-
-#CollectApiInfo - Get the url of the instance and the api endpoint
-
-def CollectApiInfo():
+#prompt user for url. something like https://<company>.agilecraft.com/api is expected! dont forget get /api on the end 
+# also format the apiendpoint like this : /users? or: /cities? or : blah
     global instanceurl
     instanceurl = raw_input("Enter the url for your instance in following format EG. ""https://cprime.agilecraft.com"" : ")
     global apiendpoint
@@ -38,6 +25,7 @@ def ParseCities(response):
         print(eachCit['Name'])
 
 #function to go through user data to get user ID, email address, and Team Name memberships
+# this code easily changed to UPDATE any user....
 def ParseUsers(response):
     data = response.json()
     for eachUsr in data["Results"]:
@@ -47,25 +35,19 @@ def ParseUsers(response):
         for teams in eachUsr["Teams"]:
             t = teams["Name"]
             print t
-        
-#                if value == "Teams":
-#                    print value
-#    for eachUsr in data["Results"]:
-#        print(eachUsr["ID"])
-#        print(eachUsr["FirstName"])
-#        print(eachUsr["LastName"])
-        
+
+#next function here...
      
             
-            
-#Authorize your access
-getauth()
-#CollectApiInfo()
+
+CollectApiInfo()
 
 print jatoken,username,instanceurl,apiendpoint
 
 # Run a request to the instance and the apiendpoint and return results as json
+# Lets get going......
 
+#use the requests method
 responseReq = requests.get(instanceurl + apiendpoint, auth=(username, jatoken))
 if apiendpoint == "/cities?":
     ParseCities(responseReq)

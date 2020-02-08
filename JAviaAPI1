@@ -9,13 +9,38 @@ import requests
 import json
 from creds import *
 
+
 #prompt user for url. something like https://<company>.agilecraft.com/api is expected! dont forget get /api on the end 
 # also format the apiendpoint like this : /users? or: /cities? or : blah
-    global instanceurl
-    instanceurl = raw_input("Enter the url for your instance in following format EG. ""https://cprime.agilecraft.com"" : ")
-    global apiendpoint
-    apiendpoint = raw_input("Enter the api endpoint for your instance in following format EG. ""/cities?"" : ")
-    return instanceurl,apiendpoint
+def CollectApiInfo():
+     global instanceurl
+     instanceurl = raw_input("Enter the url for your instance in following format EG. ""https://cprime.agilecraft.com"" : ")
+     global apiendpoint
+     apiendpoint = raw_input("Enter the api endpoint for your instance in following format EG. ""/cities?"" : ")
+     global AddUsr
+     AddUsr = raw_input("Do you want to create a new user? [Y/N]:") or "N"
+     #If script is being used to create a user start that process..
+     if AddUsr == "N":
+         return instanceurl,apiendpoint
+     else:  
+         return instanceurl,apiendpoint,AddUsr
+
+
+def CollectUserInfo():
+    global UsrEmail
+    UsrEmail = raw_input("Please enter the full email address of the user [eg: ron.cavallo@cprime.com]")
+    if not UsrEmail:
+        UsrEmail = raw_input("You must enter the full email address of the user [eg: ron.cavallo@cprime.com]")##This needs better checking 
+    global UsrFN
+    UsrFN = raw_input("Please enter the full first name of the new user [eg: Ron]")
+    if not UsrFN:
+        UsrFN = raw_input("You must enter the first name the user [eg: Ron]")
+    global UsrLN
+    UsrLN = raw_input("Please enter the last name of the new user [eg: Cavallo]")
+    if not UsrLN:
+        UsrFN = raw_input("You must enter the last name the user [eg: Cavallo]")
+    return UsrEmail,UsrFN,UsrLN
+    
 
 #function to go through city data and get ID and name of city
 def ParseCities(response):
@@ -33,27 +58,42 @@ def ParseUsers(response):
         ln = eachUsr["LastName"]
         print fn,ln
         for teams in eachUsr["Teams"]:
+            s = teams["Name"] #hack to remove duplication in json for teams due to bug opened 2/3/20 by Ron C.
             t = teams["Name"]
-            print t
+            if t != s:
+                print t
 
-def CreateUser(response):
+def CreateUser(UsrE, UsrF, UsrL):
+    UsrData = { "email" : UsrE, "FirstName" : UsrF, "LastName" : UsrL, "RoleID": "6", "Title": "CRM+ User", "EnterpirseHierarchy" : "16", "RegionID" : "1","CityID" : "14","CostCenterID" : "1" }
+    #print UsrE,UsrF,UsrL
+    header = {"content-type": "application/json"}
+    #NewUser = requests.post(url = instanceurl + apiendpoint, json = {UsrData}) 
+    NewUser = requests.post(url = instanceurl+apiendpoint,data=json.dumps(UsrData), headers=header, verify=False, auth=(username, jatoken))
+    print NewUser.status_code
     
-     
-            
+    
+    
 
-CollectApiInfo()
-
-print jatoken,username,instanceurl,apiendpoint
 
 # Run a request to the instance and the apiendpoint and return results as json
 # Lets get going......
-
 #use the requests method
+
+CollectApiInfo()
+
+print jatoken,username,instanceurl+apiendpoint,AddUsr
+
 responseReq = requests.get(instanceurl + apiendpoint, auth=(username, jatoken))
+#print responseReq.status_code
+
 if apiendpoint == "/cities?":
     ParseCities(responseReq)
 
-if apiendpoint == "/users?":
-     ParseUsers(responseReq)
+if apiendpoint == "/users?" or "/users":
+    if AddUsr == "Y":
+        CollectUserInfo()
+        CreateUser(UsrEmail,UsrFN,UsrLN)
+    else:
+        ParseUsers(responseReq)
     
 

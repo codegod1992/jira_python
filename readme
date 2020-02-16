@@ -8,4 +8,10 @@ Created on Fri Jan 31 14:07:23 2020
 
 This tool is a command line tool to be used with Python 2.7
 
-When called from the command line
+This script is run at the command line and includes prompts to the user.
+
+Anwser the prompts properly, there is little error handling in the script.
+
+The script is capable of enermerating cities and users, and of creating a user as of this commit V2.
+
+

@@ -4,9 +4,12 @@
 Created on Thu Jan 30 10:50:05 2020
 YOU MUST EDIT THE jatoken line with your own token!!!!!!!
 @author: roncavallo
+See README for usage instructions
 """
 import requests
 import json
+import sys
+import array as arr
 from creds import *
 
 
@@ -25,6 +28,70 @@ def CollectApiInfo():
      else:  
          return instanceurl,apiendpoint,AddUsr
 
+#this function will retrieve all of the needed fields for creating a user and put that information into arrays for later use.
+def CollectUsrMenuItems():
+
+# GET REGIONS    
+    global regArr
+    regArr = []
+    regions = requests.get(instanceurl + "/regions", auth=("apitoken", "a5Z||0=4NWo9N+i)4H87KFsy#P~Ra+h9^QHRIbSO"))
+    dataReg = regions.json()
+    for eachReg in dataReg['Results']:
+        region = eachReg['Region']
+        regionid = eachReg['ID']
+        regArr.append("Region Name: " + region + " " + " / Region ID: " + str(regionid))
+    #print regArr
+    
+#GET CITIES
+    global citArr
+    citArr = []
+    cities= requests.get(instanceurl + "/cities",  auth=("apitoken", "a5Z||0=4NWo9N+i)4H87KFsy#P~Ra+h9^QHRIbSO"))
+    dataCit = cities.json()
+    for eachCit in dataCit['Results']:
+        cityID = eachCit['ID']
+        cityN = eachCit['Name']
+        citArr.append(cityN)
+        citArr.append(cityID)
+    
+    
+#GET ENTERPRISE HIERARCHY   
+    global orgArr
+    orgArr = []
+    enterpriseH = requests.get(instanceurl + "/" + "/organizationStructures",  auth=("apitoken", "a5Z||0=4NWo9N+i)4H87KFsy#P~Ra+h9^QHRIbSO"))
+    entData = enterpriseH.json()
+    for eachOrg in entData['Results']:
+        orgID = eachOrg['OrganizationStructureID']
+        orgName = eachOrg['OrganizationStructureName']
+        orgArr.append(orgID)
+        orgArr.append(orgName)
+        
+#GET COST CENTERS
+    global costArr
+    costArr = []
+    CostCenters = requests.get(instanceurl + "/" + "/costCenters",  auth=("apitoken", "a5Z||0=4NWo9N+i)4H87KFsy#P~Ra+h9^QHRIbSO"))
+    costData = CostCenters.json()
+    for costCen in costData['Results']:
+        costCentID = costCen['ID']
+        costCentName = costCen['Name']
+        costArr.append(costCentName)
+        costArr.append(costCentID)
+    return regArr,citArr,orgArr,costArr
+
+
+def MenuChooser(message, arr):
+    print message
+    count = 0
+    listlen = len(arr)
+    for number in range(0,listlen):
+        count = count + 1
+        print str(count) + ":  "
+        #print number
+        print regArr[number] + " \n"
+    choice = raw_input("Please type the menu number preceeding the ':' of your choice  eg: 1 2 or 3 etc")
+        for items in range(0, listlen):
+            if items == choice:
+                
+            
 
 def CollectUserInfo():
     global UsrEmail
@@ -73,15 +140,15 @@ def CreateUser(UsrE, UsrF, UsrL):
     
     
     
-
-
-# Run a request to the instance and the apiendpoint and return results as json
-# Lets get going......
-#use the requests method
+####################################################################################################################################################################################
+# MAIN
+# First get the instance url that we are going to hit
+# Determine if we are just grabbing information and exporting or if we are going to create user(s) with team assignements etc.
+#
 
 CollectApiInfo()
 
-print jatoken,username,instanceurl+apiendpoint,AddUsr
+#print jatoken,username,instanceurl+apiendpoint,AddUsr
 
 responseReq = requests.get(instanceurl + apiendpoint, auth=(username, jatoken))
 #print responseReq.status_code
@@ -91,9 +158,10 @@ if apiendpoint == "/cities?":
 
 if apiendpoint == "/users?" or "/users":
     if AddUsr == "Y":
+        CollectUsrMenuItems()
+        MenuChooser('What Region would you like to put your user into? \n', regArr)
         CollectUserInfo()
-        CreateUser(UsrEmail,UsrFN,UsrLN)
+        #CreateUser(UsrEmail,UsrFN,UsrLN)
     else:
         ParseUsers(responseReq)
     
-

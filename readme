@@ -10,8 +10,15 @@ This tool is a command line tool to be used with Python 2.7
 
 This script is run at the command line and includes prompts to the user.
 
-Anwser the prompts properly, there is little error handling in the script.
+Answer the prompts properly, there is little error handling in the script.
 
-The script is capable of enermerating cities and users, and of creating a user as of this commit V2.
+The script is comprised of many small functions to retrieve important Jira Align information like
+regions, costcenters, roles, locations, organizational hierarchy, email addresses, etc.
+
+I've also created a menu function to take that information and present it as a menu so that we can then POST those choices to make changes in JA.
+
+More to come! Any collaborators welcome.
+
+-RC.
 
 

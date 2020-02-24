@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Jan 30 10:50:05 2020
-YOU MUST EDIT THE jatoken line with your own token!!!!!!!
 @author: roncavallo
 See README for usage instructions
 """

@@ -15,7 +15,35 @@ Answer the prompts properly, there is little error handling in the script.
 The script is comprised of many small functions to retrieve important Jira Align information like
 regions, costcenters, roles, locations, organizational hierarchy, email addresses, etc.
 
-I've also created a menu function to take that information and present it as a menu so that we can then POST those choices to make changes in JA.
+Ive also created a menu function to take that information and present it as a menu so that we can then POST those choices to make changes in JA.
+
+How to use:
+    
+    - Download the JAviaAPI1.py file and the README to a directory on your machine
+    - Create a file called creds.py 
+    
+        - Paste the following into the file:
+            
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Jan 31 12:19:58 2020
+# credentials file excluded from commit
+@author: roncavallo
+"""
+
+jatoken = "your token here"
+username = "apitoken" ## leave this as-is. The username is always apitoken when using a token
+    
+    
+## stop paste
+    
+    - Load in Python 2.7 environment
+    - Fire up command line
+    - type python JAviaAPI1.py
+    - Answer the prompts
+    - Enjoy
+
 
 More to come! Any collaborators welcome.
 

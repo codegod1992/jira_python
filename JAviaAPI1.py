@@ -9,7 +9,6 @@ See README for usage instructions
 import requests
 import json
 import sys
-import array as arr
 from creds import *
 
 
@@ -21,14 +20,14 @@ def CollectApiInfo():
      global apiendpoint
      apiendpoint = raw_input("Enter the api endpoint for your instance in following format EG. ""/cities?"" : ")
      global AddUsr
-     AddUsr = raw_input("Do you want to create a new user? [Y/N]:") or "N"
+     AddUsr = raw_input("Do you want to create a new user? [Y/N]:"+'\n') or "N"
      #If script is being used to create a user start that process..
      if AddUsr == "N":
          return instanceurl,apiendpoint
      else:  
          return instanceurl,apiendpoint,AddUsr
 
-#this function will retrieve all of the needed fields for creating a user and put that information into arrays for later use.
+#this function will retrieve JA data necessary for creating items in JA and put that information into arrays for later use.
 def CollectUsrMenuItems():
 
 # GET REGIONS    
@@ -50,9 +49,7 @@ def CollectUsrMenuItems():
     for eachCit in dataCit['Results']:
         cityID = eachCit['ID']
         cityN = eachCit['Name']
-        citArr.append(cityN)
-        citArr.append(cityID)
-    
+        citArr.append("City Name: " + cityN + " " + " / City ID: " + str(cityID))
     
 #GET ENTERPRISE HIERARCHY   
     global orgArr
@@ -62,8 +59,7 @@ def CollectUsrMenuItems():
     for eachOrg in entData['Results']:
         orgID = eachOrg['OrganizationStructureID']
         orgName = eachOrg['OrganizationStructureName']
-        orgArr.append(orgID)
-        orgArr.append(orgName)
+        orgArr.append("Organization Name: " + orgName + " " + " / Organization ID: " + str(orgID))
         
 #GET COST CENTERS
     global costArr
@@ -73,26 +69,31 @@ def CollectUsrMenuItems():
     for costCen in costData['Results']:
         costCentID = costCen['ID']
         costCentName = costCen['Name']
-        costArr.append(costCentName)
-        costArr.append(costCentID)
+        costArr.append("Costcenter Name: " + costCentName + " " + " / Costcenter ID: " + str(costCentID))
+    
+#Return all of the arrays that have been built in this function
     return regArr,citArr,orgArr,costArr
 
+#This function is meant to take the arrays created by GetMenuItems and format them into menus that the user can pick from to send to JA in other functions that POST data.
 
 def MenuChooser(message, arr):
-    print message
+    print message+'\n'
     count = 0
+    choice = ""
     listlen = len(arr)
     for number in range(0,listlen):
         count = count + 1
         print str(count) + ":  "
-        #print number
-        print regArr[number] + " \n"
-    choice = raw_input("Please type the menu number preceeding the ':' of your choice  eg: 1 2 or 3 etc")
-        for items in range(0, listlen):
-            if items == choice:
+        print arr[number] + " \n"
+    choice = raw_input("Please type the menu number preceeding the ':' of your choice  eg: 1 2 or 3 etc: \n")
+    choice = int(choice) 
+    choice = (choice - 1) # Since I start the menu with the number 1, but the element number in the array starts at 0, make them match
+    for menuitems in range(0, listlen):
+        if menuitems is choice:
+            print "Choice made: " + arr[choice] + " \n"
                 
             
-
+# This fuction is for collecting unique user-specific information for creating users such as email address etc. 
 def CollectUserInfo():
     global UsrEmail
     UsrEmail = raw_input("Please enter the full email address of the user [eg: ron.cavallo@cprime.com]")
@@ -130,11 +131,11 @@ def ParseUsers(response):
             if t != s:
                 print t
 
+#This function does what is says it does. Duh.
+
 def CreateUser(UsrE, UsrF, UsrL):
     UsrData = { "email" : UsrE, "FirstName" : UsrF, "LastName" : UsrL, "RoleID": "6", "Title": "CRM+ User", "EnterpirseHierarchy" : "16", "RegionID" : "1","CityID" : "14","CostCenterID" : "1" }
-    #print UsrE,UsrF,UsrL
     header = {"content-type": "application/json"}
-    #NewUser = requests.post(url = instanceurl + apiendpoint, json = {UsrData}) 
     NewUser = requests.post(url = instanceurl+apiendpoint,data=json.dumps(UsrData), headers=header, verify=False, auth=(username, jatoken))
     print NewUser.status_code
     
@@ -147,7 +148,6 @@ def CreateUser(UsrE, UsrF, UsrL):
 #
 
 CollectApiInfo()
-
 #print jatoken,username,instanceurl+apiendpoint,AddUsr
 
 responseReq = requests.get(instanceurl + apiendpoint, auth=(username, jatoken))
@@ -156,10 +156,12 @@ responseReq = requests.get(instanceurl + apiendpoint, auth=(username, jatoken))
 if apiendpoint == "/cities?":
     ParseCities(responseReq)
 
-if apiendpoint == "/users?" or "/users":
+if apiendpoint == "/users?" or "/users" or "user" or "users":
     if AddUsr == "Y":
         CollectUsrMenuItems()
         MenuChooser('What Region would you like to put your user into? \n', regArr)
+        MenuChooser('What City do you want to assign to your user? \n', citArr)
+        MenuChooser('What Organization do you want to assign to your user? \n', orgArr)
         CollectUserInfo()
         #CreateUser(UsrEmail,UsrFN,UsrLN)
     else:

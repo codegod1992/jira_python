@@ -15,17 +15,26 @@ from creds import *
 # also format the apiendpoint like this : /users? or: /cities? or : blah
 def CollectApiInfo():
      global instanceurl
-     check = True
-     while check:
+     checkInput = ""
+     while True:
          instanceurl = raw_input("Enter the url for your instance in following format EG. ""https://cprime.agilecraft.com"" : ")
-         checkInput = raw_input("Is this your correct Jira Align instance you want to work with?  " + instanceurl + '\n')
-         if checkInput == "N" or "n":
-             print "Please try again: " + '\n'
+         checkInput = raw_input("Is this your correct Jira Align instance you want to work with?  " + instanceurl + "  ")
+         checkInput = str(checkInput)
+         if (checkInput == 'N') or (checkInput == 'n'):
+             print "Please enter your INSTANCE name again:  "
          else:
-             continue
+             break  
      instanceurl = instanceurl + "/api/"
+     checkInput = ""
      global apiendpoint
-     apiendpoint = raw_input("Enter the api endpoint for your instance in following format EG. ""cities"" : ")
+     while True:
+         apiendpoint = raw_input("Enter the api endpoint for your instance in following format EG. ""cities"" : ")
+         checkInput = raw_input("Is this your correct API endpoint you want to work with?  " + apiendpoint + "  ")
+         checkInput = str(checkInput)
+         if (checkInput == 'N') or (checkInput == 'n'):
+             print "Please enter your API endpoint again:  "
+         else:
+             break  
      return instanceurl,apiendpoint
 
 #this function will retrieve JA data necessary for creating items in JA and put that information into arrays for later use.

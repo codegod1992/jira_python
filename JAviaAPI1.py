@@ -43,7 +43,7 @@ def CollectUsrMenuItems():
 # GET REGIONS    
     global regArr
     regArr = []
-    regions = requests.get(instanceurl + "/regions", auth=("apitoken", "a5Z||0=4NWo9N+i)4H87KFsy#P~Ra+h9^QHRIbSO"))
+    regions = requests.get(instanceurl + "/regions", auth=(username, jatoken))
     dataReg = regions.json()
     for eachReg in dataReg['Results']:
         region = eachReg['Region']
@@ -54,7 +54,7 @@ def CollectUsrMenuItems():
 #GET CITIES
     global citArr
     citArr = []
-    cities= requests.get(instanceurl + "/cities",  auth=("apitoken", "a5Z||0=4NWo9N+i)4H87KFsy#P~Ra+h9^QHRIbSO"))
+    cities= requests.get(instanceurl + "/cities",  auth=(username, jatoken))
     dataCit = cities.json()
     for eachCit in dataCit['Results']:
         cityID = eachCit['ID']
@@ -64,7 +64,7 @@ def CollectUsrMenuItems():
 #GET ENTERPRISE HIERARCHY   
     global orgArr
     orgArr = []
-    enterpriseH = requests.get(instanceurl + "/" + "/organizationStructures",  auth=("apitoken", "a5Z||0=4NWo9N+i)4H87KFsy#P~Ra+h9^QHRIbSO"))
+    enterpriseH = requests.get(instanceurl + "/" + "/organizationStructures",  auth=(username, jatoken))
     entData = enterpriseH.json()
     for eachOrg in entData['Results']:
         orgID = eachOrg['OrganizationStructureID']
@@ -74,7 +74,7 @@ def CollectUsrMenuItems():
 #GET COST CENTERS
     global costArr
     costArr = []
-    CostCenters = requests.get(instanceurl + "/" + "/costCenters",  auth=("apitoken", "a5Z||0=4NWo9N+i)4H87KFsy#P~Ra+h9^QHRIbSO"))
+    CostCenters = requests.get(instanceurl + "/" + "/costCenters",  auth=(username, jatoken))
     costData = CostCenters.json()
     for costCen in costData['Results']:
         costCentID = costCen['ID']

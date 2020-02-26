@@ -15,16 +15,18 @@ from creds import *
 # also format the apiendpoint like this : /users? or: /cities? or : blah
 def CollectApiInfo():
      global instanceurl
-     instanceurl = raw_input("Enter the url for your instance in following format EG. ""https://cprime.agilecraft.com"" : ")
+     check = True
+     while check:
+         instanceurl = raw_input("Enter the url for your instance in following format EG. ""https://cprime.agilecraft.com"" : ")
+         checkInput = raw_input("Is this your correct Jira Align instance you want to work with?  " + instanceurl + '\n')
+         if checkInput == "N" or "n":
+             print "Please try again: " + '\n'
+         else:
+             continue
+     instanceurl = instanceurl + "/api/"
      global apiendpoint
-     apiendpoint = raw_input("Enter the api endpoint for your instance in following format EG. ""/cities?"" : ")
-     global AddUsr
-     AddUsr = raw_input("Do you want to create a new user? [Y/N]:"+'\n') or "N"
-     #If script is being used to create a user start that process..
-     if AddUsr == "N":
-         return instanceurl,apiendpoint
-     else:  
-         return instanceurl,apiendpoint,AddUsr
+     apiendpoint = raw_input("Enter the api endpoint for your instance in following format EG. ""cities"" : ")
+     return instanceurl,apiendpoint
 
 #this function will retrieve JA data necessary for creating items in JA and put that information into arrays for later use.
 def CollectUsrMenuItems():
@@ -113,8 +115,7 @@ def CollectUserInfo():
 def ParseCities(response):
     data = response.json()
     for eachCit in data['Results']:
-        print(eachCit['ID'])
-        print(eachCit['Name'])
+        print(eachCit['ID']),(eachCit['Name'])
 
 #function to go through user data to get user ID, email address, and Team Name memberships
 # this code easily changed to UPDATE any user....
@@ -138,7 +139,9 @@ def CreateUser(UsrE, UsrF, UsrL):
     NewUser = requests.post(url = instanceurl+apiendpoint,data=json.dumps(UsrData), headers=header, verify=False, auth=(username, jatoken))
     print NewUser.status_code
     
-    
+# This function creates a region if you specify you want to create one
+
+#def CreateRegion():
     
 ####################################################################################################################################################################################
 # MAIN
@@ -150,13 +153,19 @@ CollectApiInfo()
 #print jatoken,username,instanceurl+apiendpoint,AddUsr
 
 responseReq = requests.get(instanceurl + apiendpoint, auth=(username, jatoken))
-#print responseReq.status_code
+print responseReq
 
-if apiendpoint == "/cities?":
-    ParseCities(responseReq)
+if apiendpoint == "/cities?" or "cities":
+    addCity = raw_input("Do you want to create a new City in your instance? [Y/N]:"+'\n') or "N"
+    if addCity == "Y" or "y":
+        print "Here is a list of all cities in your instance \n"
+        ParseCities(responseReq)
+        
+       
 
 if apiendpoint == "/users?" or "/users" or "user" or "users":
-    if AddUsr == "Y":
+    addUsr = raw_input("Do you want to create a new user? [Y/N]:"+'\n') or "N"
+    if addUsr == "Y" or "y":
         CollectUsrMenuItems()
         MenuChooser('What Region would you like to put your user into? \n', regArr)
         MenuChooser('What City do you want to assign to your user? \n', citArr)
@@ -164,5 +173,12 @@ if apiendpoint == "/users?" or "/users" or "user" or "users":
         CollectUserInfo()
         #CreateUser(UsrEmail,UsrFN,UsrLN)
     else:
+        print "Here is a list of all users in your instance"
         ParseUsers(responseReq)
+
+#if apiendpoint == "/regions?" or "/regions" or "/region":
+#    if addReg == "Y" or "y":
+        
+    
+    
     

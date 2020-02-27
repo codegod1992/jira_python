@@ -11,31 +11,26 @@ import sys
 from creds import *
 
 
-#prompt user for url. something like https://<company>.agilecraft.com/api is expected! dont forget get /api on the end 
-# also format the apiendpoint like this : /users? or: /cities? or : blah
+# This collects all of the information about the server instance and api endpoint you want to work with
 def CollectApiInfo():
-     global instanceurl
-     checkInput = ""
-     while True:
-         instanceurl = raw_input("Enter the url for your instance in following format EG. ""https://cprime.agilecraft.com"" : ")
-         checkInput = raw_input("Is this your correct Jira Align instance you want to work with?  " + instanceurl + "  ")
-         checkInput = str(checkInput)
-         if (checkInput == 'N') or (checkInput == 'n'):
-             print "Please enter your INSTANCE name again:  "
-         else:
-             break  
-     instanceurl = instanceurl + "/api/"
-     checkInput = ""
-     global apiendpoint
-     while True:
-         apiendpoint = raw_input("Enter the api endpoint for your instance in following format EG. ""cities"" : ")
-         checkInput = raw_input("Is this your correct API endpoint you want to work with?  " + apiendpoint + "  ")
-         checkInput = str(checkInput)
-         if (checkInput == 'N') or (checkInput == 'n'):
-             print "Please enter your API endpoint again:  "
-         else:
-             break  
-     return instanceurl,apiendpoint
+    global apiendpoint
+    apiendpoint = raw_input("Enter the api endpoint for your instance in following format EG. ""cities"" : ")
+    global instanceurl
+    instanceurl = raw_input("Enter the url for your instance in following format EG. ""https://cprime.agilecraft.com"" : ")
+    ChkInput = raw_input("Is this your correct instance and endpoint you want to work with?  " + instanceurl + " : " + apiendpoint + "  ")
+    if (ChkInput == "N") or (ChkInput == "n"):
+        CollectApiInfo()
+    else:
+        instanceurl = instanceurl + "/api"
+        return apiendpoint, instanceurl
+
+#reuse this function to check if the user sees that they entered information correctly after reviewing it
+def ChkInput(Input):
+    while True:
+        if (Input == 'N') or (Input == 'n'):
+            return input
+        else:
+            break
 
 #this function will retrieve JA data necessary for creating items in JA and put that information into arrays for later use.
 def CollectUsrMenuItems():
@@ -80,7 +75,7 @@ def CollectUsrMenuItems():
         costCentID = costCen['ID']
         costCentName = costCen['Name']
         costArr.append("Costcenter Name: " + costCentName + " " + " / Costcenter ID: " + str(costCentID))
-    
+        
 #Return all of the arrays that have been built in this function
     return regArr,citArr,orgArr,costArr
 
@@ -110,13 +105,13 @@ def CollectUserInfo():
     if not UsrEmail:
         UsrEmail = raw_input("You must enter the full email address of the user [eg: ron.cavallo@cprime.com]")##This needs better checking 
     global UsrFN
-    UsrFN = raw_input("Please enter the full first name of the new user [eg: Ron]")
+    UsrFN = raw_input("Please enter the full first name of the new user [eg: Jimeny]")
     if not UsrFN:
-        UsrFN = raw_input("You must enter the first name the user [eg: Ron]")
+        UsrFN = raw_input("You must enter the first name the user [eg: Jimeny]")
     global UsrLN
-    UsrLN = raw_input("Please enter the last name of the new user [eg: Cavallo]")
+    UsrLN = raw_input("Please enter the last name of the new user [eg: Cricket]")
     if not UsrLN:
-        UsrFN = raw_input("You must enter the last name the user [eg: Cavallo]")
+        UsrFN = raw_input("You must enter the last name the user [eg: Cricket]")
     return UsrEmail,UsrFN,UsrLN
     
 
@@ -125,6 +120,8 @@ def ParseCities(response):
     data = response.json()
     for eachCit in data['Results']:
         print(eachCit['ID']),(eachCit['Name'])
+        
+
 
 #function to go through user data to get user ID, email address, and Team Name memberships
 # this code easily changed to UPDATE any user....
@@ -146,35 +143,33 @@ def CreateUser(UsrE, UsrF, UsrL):
     UsrData = { "email" : UsrE, "FirstName" : UsrF, "LastName" : UsrL, "RoleID": "6", "Title": "CRM+ User", "EnterpirseHierarchy" : "16", "RegionID" : "1","CityID" : "14","CostCenterID" : "1" }
     header = {"content-type": "application/json"}
     NewUser = requests.post(url = instanceurl+apiendpoint,data=json.dumps(UsrData), headers=header, verify=False, auth=(username, jatoken))
-    print NewUser.status_code
+    # print NewUser.status_code
     
-# This function creates a region if you specify you want to create one
-
-#def CreateRegion():
     
 ####################################################################################################################################################################################
 # MAIN
-# First get the instance url that we are going to hit
-# Determine if we are just grabbing information and exporting or if we are going to create user(s) with team assignements etc.
-#
+
+#collect the instance name and endpoint
 
 CollectApiInfo()
 #print jatoken,username,instanceurl+apiendpoint,AddUsr
 
+#build a query to the specified server and endpoint
 responseReq = requests.get(instanceurl + apiendpoint, auth=(username, jatoken))
-print responseReq
 
-if apiendpoint == "/cities?" or "cities":
-    addCity = raw_input("Do you want to create a new City in your instance? [Y/N]:"+'\n') or "N"
-    if addCity == "Y" or "y":
+#break out into handing each endpoint differently as they will go through iteration in subsequent versions of API
+if (apiendpoint == "/cities?") or (apiendpoint == "/cities") or (apiendpoint == "cities"):
+    addCity = raw_input("Do you want to create a new City in your instance? [Y/N]:"+'\n')
+    if (addCity == "Y") or (addCity == "y"):
         print "Here is a list of all cities in your instance \n"
         ParseCities(responseReq)
-        
-       
+        newCity = raw_input("Please enter the name of the new City you would like to creat [eg: Atlanta]")
+    else:
+        print "Here is a list of all cities in your instance \n"
 
-if apiendpoint == "/users?" or "/users" or "user" or "users":
+if (apiendpoint == "/users?") or (apiendpoint == "/users") or (apiendpoint == "users"):
     addUsr = raw_input("Do you want to create a new user? [Y/N]:"+'\n') or "N"
-    if addUsr == "Y" or "y":
+    if (addUsr == "Y") or (addUsr == "y"):
         CollectUsrMenuItems()
         MenuChooser('What Region would you like to put your user into? \n', regArr)
         MenuChooser('What City do you want to assign to your user? \n', citArr)
@@ -184,10 +179,6 @@ if apiendpoint == "/users?" or "/users" or "user" or "users":
     else:
         print "Here is a list of all users in your instance"
         ParseUsers(responseReq)
-
-#if apiendpoint == "/regions?" or "/regions" or "/region":
-#    if addReg == "Y" or "y":
-        
     
     
     

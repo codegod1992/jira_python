@@ -7,23 +7,24 @@ See README for usage instructions
 """
 import requests
 import json
-import sys
 from creds import *
 
 
-# This collects all of the information about the server instance and api endpoint you want to work with
+# This collects all of the information about the server instance and api endpoint you want to work with and formats the url properly.
+# This is the only place that the apiendpoint or the url should be manipulated or it breaks the rest of the routines that depend upon it.
 def CollectApiInfo():
     global apiendpoint
-    apiendpoint = raw_input("Enter the api endpoint for your instance in following format EG. ""cities"" : ")
     global instanceurl
+    apiendpoint = raw_input("Enter the api endpoint for your instance in following format EG. ""cities"". It is very important that you spell this endpoint correctly. Please refer to the api documents E.G https://cprime.agilecraft.com/api-docs/public/ for the apiendpoints available : ")
     instanceurl = raw_input("Enter the url for your instance in following format EG. ""https://cprime.agilecraft.com"" : ")
     ChkInput = raw_input("Is this your correct instance and endpoint you want to work with?  " + instanceurl + " : " + apiendpoint + "  ")
     if (ChkInput == "N") or (ChkInput == "n"):
-        CollectApiInfo()
+       CollectApiInfo()
     else:
-        instanceurl = instanceurl + "/api"
+        instanceurl = instanceurl + "/api" ##### Mess with these couple of lines, and break all of the other defs! 
+        apiendpoint = "/" + apiendpoint.lower()
         return apiendpoint, instanceurl
-
+        
 #reuse this function to check if the user sees that they entered information correctly after reviewing it
 def ChkInput(Input):
     while True:
@@ -33,9 +34,10 @@ def ChkInput(Input):
             break
 
 #this function will retrieve JA data necessary for creating items in JA and put that information into arrays for later use.
+            
 def CollectUsrMenuItems():
-
-# GET REGIONS    
+# GET REGIONS
+    print instanceurl+apiendpoint
     global regArr
     regArr = []
     regions = requests.get(instanceurl + "/regions", auth=(username, jatoken))
@@ -59,7 +61,7 @@ def CollectUsrMenuItems():
 #GET ENTERPRISE HIERARCHY   
     global orgArr
     orgArr = []
-    enterpriseH = requests.get(instanceurl + "/" + "/organizationStructures",  auth=(username, jatoken))
+    enterpriseH = requests.get(instanceurl + "/organizationStructures",  auth=(username, jatoken))
     entData = enterpriseH.json()
     for eachOrg in entData['Results']:
         orgID = eachOrg['OrganizationStructureID']
@@ -69,7 +71,7 @@ def CollectUsrMenuItems():
 #GET COST CENTERS
     global costArr
     costArr = []
-    CostCenters = requests.get(instanceurl + "/" + "/costCenters",  auth=(username, jatoken))
+    CostCenters = requests.get(instanceurl + "/costcenters",  auth=(username, jatoken))
     costData = CostCenters.json()
     for costCen in costData['Results']:
         costCentID = costCen['ID']
@@ -99,6 +101,7 @@ def MenuChooser(message, arr):
                 
             
 # This fuction is for collecting unique user-specific information for creating users such as email address etc. 
+            
 def CollectUserInfo():
     global UsrEmail
     UsrEmail = raw_input("Please enter the full email address of the user [eg: ron.cavallo@cprime.com]")
@@ -115,16 +118,8 @@ def CollectUserInfo():
     return UsrEmail,UsrFN,UsrLN
     
 
-#function to go through city data and get ID and name of city
-def ParseCities(response):
-    data = response.json()
-    for eachCit in data['Results']:
-        print(eachCit['ID']),(eachCit['Name'])
-        
-
 
 #function to go through user data to get user ID, email address, and Team Name memberships
-# this code easily changed to UPDATE any user....
 def ParseUsers(response):
     data = response.json()
     for eachUsr in data["Results"]:
@@ -137,37 +132,63 @@ def ParseUsers(response):
             if t != s:
                 print t
 
-#This function does what is says it does. Duh.
+#These functions create objects as per their name using POST commands 
 
 def CreateUser(UsrE, UsrF, UsrL):
     UsrData = { "email" : UsrE, "FirstName" : UsrF, "LastName" : UsrL, "RoleID": "6", "Title": "CRM+ User", "EnterpirseHierarchy" : "16", "RegionID" : "1","CityID" : "14","CostCenterID" : "1" }
-    header = {"content-type": "application/json"}
+    #header = {"content-type": "application/json"}
+    header = {"content-type": "appilcation/json", "Accept": "text/plain"}
     NewUser = requests.post(url = instanceurl+apiendpoint,data=json.dumps(UsrData), headers=header, verify=False, auth=(username, jatoken))
-    # print NewUser.status_code
-    
+
+# This function creates a city with a post. Contrary to API documentation, these are the only two fields required to create a field
+def CreateCity(newName, existingRegionID):
+    paramData = {"Name" : newName, "RegionID" : existingRegionID}
+    header = {"Content-Type": "application/json"}
+    newCityPost = requests.post(url = instanceurl+apiendpoint, data=json.dumps(paramData), headers=header, verify=True, auth=(username, jatoken))
+    print (newCityPost.status_code)
+
+# This function creates an organization with a post. You only need to specify the name of the new org the ID will be automatically generated
+def CreateOrg(newName):
+    paramData = {"Name" : newName}
+    header = {"Content-Type": "application/json"}
+    newOrgPost = requests.post(url = instanceurl+apiendpoint, data=json.dumps(paramData), headers=header, verify=True, auth=(username, jatoken))
+    print (newOrgPost.status_code)
+
+
+
     
 ####################################################################################################################################################################################
 # MAIN
+# This is where we direct the user towards working code againsy their chosen api endpoint
 
-#collect the instance name and endpoint
-
+#Collect api server and endpoint. Also collect all of the instance json infomation we need into arrays with CollectUsrMenuItems
 CollectApiInfo()
-#print jatoken,username,instanceurl+apiendpoint,AddUsr
+CollectUsrMenuItems()
 
-#build a query to the specified server and endpoint
+
+#build a query to the specified server and endpoint. Remember, the credential variables below should be defined in the creds.py that the README shows you how to build
 responseReq = requests.get(instanceurl + apiendpoint, auth=(username, jatoken))
 
 #break out into handing each endpoint differently as they will go through iteration in subsequent versions of API
-if (apiendpoint == "/cities?") or (apiendpoint == "/cities") or (apiendpoint == "cities"):
-    addCity = raw_input("Do you want to create a new City in your instance? [Y/N]:"+'\n')
+if (apiendpoint == "/cities?") or (apiendpoint == "cities"):
+    addCity = raw_input("Do you want to create a new City in your Jira Align instance? [Y/N]:"+'\n')
     if (addCity == "Y") or (addCity == "y"):
-        print "Here is a list of all cities in your instance \n"
-        ParseCities(responseReq)
-        newCity = raw_input("Please enter the name of the new City you would like to creat [eg: Atlanta]")
+        print "You must specify a NEW CITY NAME, and an EXISTING REGION ID NUMBER in order to add a new City. Here is a list of all Cities with City ID's and Regions with Region ID's in Jira Align from your instance \n"
+        for cit in citArr:
+            print cit
+        for reg in regArr:
+            print reg
+        existRegionID = raw_input("Please enter the ID NUMBER of the EXISTING Region you would like to add your new City to [eg: US]")
+        existRegionID = int(existRegionID)
+        newCityName = raw_input("Please enter the name of the new City you would like to create [eg: Atlanta]")
+        CreateCity(newCityName,existRegionID)
+       
     else:
-        print "Here is a list of all cities in your instance \n"
+        print "Here is a list of all cities and thier IDs in Jira Align from your instance \n"
+        for cit in citArr:
+            print cit
 
-if (apiendpoint == "/users?") or (apiendpoint == "/users") or (apiendpoint == "users"):
+if (apiendpoint == "/users?") or (apiendpoint == "users"):
     addUsr = raw_input("Do you want to create a new user? [Y/N]:"+'\n') or "N"
     if (addUsr == "Y") or (addUsr == "y"):
         CollectUsrMenuItems()
@@ -177,8 +198,20 @@ if (apiendpoint == "/users?") or (apiendpoint == "/users") or (apiendpoint == "u
         CollectUserInfo()
         #CreateUser(UsrEmail,UsrFN,UsrLN)
     else:
-        print "Here is a list of all users in your instance"
+        print "Here is a list of all users in your Jira Align instance \n"
         ParseUsers(responseReq)
-    
-    
+
+if (apiendpoint == "/organizationstructures?") or (apiendpoint == "organizationstructures"):
+    addOrg = raw_input("Do you want to create a new Organization in your instance? If 'No' we will just output a list of the exsiting organizations [Y/N]:"+'\n')
+    if (addOrg== "Y") or (addOrg == "y"):
+        print "Here is a list of all Organizations and thier IDs in Jira Align from your instance \n"
+        for org in orgArr:
+            print org
+        newOrg = raw_input("Please enter the name of the new Organization you would like to create [eg: HR]")
+        CreateOrg(newOrg)
+    else:
+        print "Here is a list of all cities and thier IDs in Jira Align from your instance \n"
+        for org in orgArr:
+            print org
+        
     

@@ -170,7 +170,8 @@ CollectUsrMenuItems()
 responseReq = requests.get(instanceurl + apiendpoint, auth=(username, jatoken))
 
 #break out into handing each endpoint differently as they will go through iteration in subsequent versions of API
-if (apiendpoint == "/cities?") or (apiendpoint == "cities"):
+#CITIES Endpoint
+if "cities" in apiendpoint:
     addCity = raw_input("Do you want to create a new City in your Jira Align instance? [Y/N]:"+'\n')
     if (addCity == "Y") or (addCity == "y"):
         print "You must specify a NEW CITY NAME, and an EXISTING REGION ID NUMBER in order to add a new City. Here is a list of all Cities with City ID's and Regions with Region ID's in Jira Align from your instance \n"
@@ -182,13 +183,13 @@ if (apiendpoint == "/cities?") or (apiendpoint == "cities"):
         existRegionID = int(existRegionID)
         newCityName = raw_input("Please enter the name of the new City you would like to create [eg: Atlanta]")
         CreateCity(newCityName,existRegionID)
-       
     else:
         print "Here is a list of all cities and thier IDs in Jira Align from your instance \n"
         for cit in citArr:
             print cit
 
-if (apiendpoint == "/users?") or (apiendpoint == "users"):
+#USERS endpoint
+if "users" in apiendpoint:
     addUsr = raw_input("Do you want to create a new user? [Y/N]:"+'\n') or "N"
     if (addUsr == "Y") or (addUsr == "y"):
         CollectUsrMenuItems()
@@ -201,7 +202,8 @@ if (apiendpoint == "/users?") or (apiendpoint == "users"):
         print "Here is a list of all users in your Jira Align instance \n"
         ParseUsers(responseReq)
 
-if (apiendpoint == "/organizationstructures?") or (apiendpoint == "organizationstructures"):
+#ORGANIZATIONSTRUCTURES endpoint
+if "organizationstructures" in apiendpoint:
     addOrg = raw_input("Do you want to create a new Organization in your instance? If 'No' we will just output a list of the exsiting organizations [Y/N]:"+'\n')
     if (addOrg== "Y") or (addOrg == "y"):
         print "Here is a list of all Organizations and thier IDs in Jira Align from your instance \n"

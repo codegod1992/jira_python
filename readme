@@ -6,41 +6,36 @@ Created on Fri Jan 31 14:07:23 2020
 @author: roncavallo
 """
 
-This tool is a command line tool to be used with Python 2.7
+This tool is a command line tool to be used with Python 2.7 or Python 3.7
 
-This script is run at the command line and includes prompts to the user.
+For Python 2.7 environments you will use file JAviaAPI1.py.
+For Python 3.7 environments you will use file JAviaAPI2-Py3-7-6.py
 
-Answer the prompts properly, there is little error handling in the script.
 
-The script is comprised of many small functions to retrieve important Jira Align information like
-regions, costcenters, roles, locations, organizational hierarchy, email addresses, etc.
+This script is run at the command line and prompts to the user for what information they want to collect from any instance running API
 
-Ive also created a menu function to take that information and present it as a menu so that we can then POST those choices to make changes in JA.
 
 How to use:
     
-    - Download the JAviaAPI1.py file and the README to a directory on your machine
-    - Create a file called creds.py 
+    - Download the JAviaAPI1.py file (Py 2.7) or JAviaAPI2-Py3-7-6.py (Py 3.7)  and the README to a directory on your machine
+    - CREATE a blank file called creds.py 
     
-        - Paste the following into the file:
+        - Create a token in the instance by logging in and clicking API Token under your your user profile
+        - Paste the following into the blank creds.py file:
             
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Jan 31 12:19:58 2020
-# credentials file excluded from commit
-@author: roncavallo
-"""
+
 
 jatoken = "your token here"
 username = "apitoken" ## leave this as-is. The username is always apitoken when using a token
     
     
-## stop paste
+## stop paste.
     
-    - Load in Python 2.7 environment
-    - Fire up command line
-    - type python JAviaAPI1.py
+    - Load in Python 2.7 or 3.7 environments respectively
+    - Open a terminal / command line and change directory to the files you downloaded
+    - type "python JAviaAPI1.py" or "python JAviaAPI2-Py3-7-6.py" no quotes silly
     - Answer the prompts
     - Enjoy
 
